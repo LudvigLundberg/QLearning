@@ -2,7 +2,7 @@ class GridWorld:
     def __init__(self, board, rewards, start, goal, height, width):
         self.state = board
         self.rewards = rewards
-        self.actions = ['up','down','left','right']
+        self.actions = ['up','down','right','left']
         self.actor_pos = start
         self.goal = goal
         self._height = height
@@ -14,7 +14,7 @@ class GridWorld:
     def act(self, action):
         self.state[self.actor_pos] = 0
         if self.out_of_bounds(action):
-            return -5, True
+            return -10, True
         match action:
             case 'up':
                 self.actor_pos = self.actor_pos - self._width
