@@ -3,15 +3,16 @@ from random import randrange
 import numpy as np
 
 class QLearner:
-    def __init__(self, actions, learning_rate = 0.1, discount_factor = 0.9, explore_rate = 0.01):
+    def __init__(self, actions, learning_rate = 0.1, discount_factor = 0.9, explore_rate = 0.01, objectives = 1, weight_function = lambda x : x[0]):
         self.actions = actions
         self.Q = dict()
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.explore_rate = explore_rate
+        self._explore = True
         self._action_types = np.array([False, True], dtype=bool)
-
-
+        self._objectives = objectives
+        self._weight_function = weight_function
 
     def act(self, state):
         action = self.policy(state)
@@ -23,11 +24,11 @@ class QLearner:
         self.previous_state = initial_state
         self.previous_action = None
         if initial_state not in self.Q:
-            self.Q[initial_state] = [0] * len(self.actions)
+            self.Q[initial_state] = [np.array([0]*self._objectives)] * len(self.actions)
 
     def reward(self, reward, state):
         previous_value = self.Q[self.previous_state][self.previous_action] 
-        temporal_difference = reward + self.discount_factor*self._max_estimated_future_value(state) - previous_value
+        temporal_difference = reward + self.discount_factor * self._max_estimated_future_value(state) - previous_value
         self.Q[self.previous_state][self.previous_action] = previous_value + self.learning_rate * temporal_difference
 
     def end_episode(self): 
@@ -37,14 +38,19 @@ class QLearner:
         if state in self.Q:
             return max(self.Q[state])
         else:
-            self.Q[state] = [0] * len(self.actions)
+            self.Q[state] = [np.array([0]*self._objectives)] * len(self.actions)
             return 0
 
     def policy(self, state):
         possible_actions = self.Q[state]
-        explore = np.random.choice(self._action_types, p=[1-self.explore_rate, self.explore_rate])
+        policy_explore = np.random.choice(self._action_types, p=[1-self.explore_rate, self.explore_rate])
 
-        if explore:
+        if self._explore and policy_explore:
             return randrange(len(possible_actions))
         else:
-            return possible_actions.index(max(possible_actions))
+            return possible_actions.index(max(possible_actions, key = self._weight_function))
+
+    def stop_exploration(self):
+        self._explore = False
+
+    

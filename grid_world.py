@@ -1,3 +1,5 @@
+import numpy as np
+
 class GridWorld:
     def __init__(self, board, rewards, start, goal, height, width):
         self.state = board
@@ -14,7 +16,7 @@ class GridWorld:
     def act(self, action):
         self.state[self.actor_pos] = 0
         if self.out_of_bounds(action):
-            return -10, True
+            return np.array([-10]), True
         match action:
             case 'up':
                 self.actor_pos = self.actor_pos - self._width
@@ -27,7 +29,7 @@ class GridWorld:
         
         self.state[self.actor_pos] = 1
 
-        value = self.rewards[self.actor_pos] if self.actor_pos in self.rewards else -1
+        value = self.rewards[self.actor_pos] if self.actor_pos in self.rewards else np.array([-1])
         if self.actor_pos == self.goal:
             return value, True
         else:
