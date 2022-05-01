@@ -1,3 +1,4 @@
+import enum
 import random
 from random import randrange
 import numpy as np
@@ -36,7 +37,14 @@ class QLearner:
 
     def _max_estimated_future_value(self, state):
         if state in self.Q:
-            return max(self.Q[state])
+            action_values = self.Q[state]
+            values = []
+            for i in range(self._objectives):
+                max = action_values[0][i]
+                for j,_ in enumerate(self.actions):
+                    max = action_values[j][i] if action_values[j][i] > max else max
+                values.append(max)
+            return np.array(values)
         else:
             self.Q[state] = [np.array([0]*self._objectives)] * len(self.actions)
             return 0
