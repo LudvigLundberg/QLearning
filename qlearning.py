@@ -47,7 +47,7 @@ class QLearner:
             return np.array(values)
         else:
             self.Q[state] = [np.array([0]*self._objectives)] * len(self.actions)
-            return 0
+            return np.array([0]*self._objectives)
 
     def policy(self, state):
         possible_actions = self.Q[state]
@@ -56,9 +56,7 @@ class QLearner:
         if self._explore and policy_explore:
             return randrange(len(possible_actions))
         else:
-            return possible_actions.index(max(possible_actions, key = self._weight_function))
+            return np.argmax(list(map(self._weight_function, possible_actions)))
 
     def stop_exploration(self):
         self._explore = False
-
-    
