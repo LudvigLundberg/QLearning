@@ -20,7 +20,7 @@ class GridWorld(ABC):
             case 'up':
                 return self.actor_pos < self._width
             case 'down':
-                return self.actor_pos >= len(self.state) - self._width
+                return self.actor_pos >= (self._height*self._width) - self._width
             case 'left':
                 return self.actor_pos % self._width == 0
             case 'right':
@@ -28,7 +28,8 @@ class GridWorld(ABC):
 
 class Default(GridWorld):
     def __init__(self, board, rewards, start, goal, height, width):
-        super.__init__(height, width)
+        self._height = height
+        self._width = width
         self.state = board
         self.rewards = rewards
         self.actor_pos = start
@@ -72,10 +73,10 @@ class PickUpAndDeliver(GridWorld):
 
     def act(self, action):
         self._steps += 1
-        if self._steps == 25:
-            return np.array([-25,-25]), True
+        if self._steps == 50:
+            return np.array([-25,-50]), True
         if self.out_of_bounds(action):
-            return np.array([-25,-25]), True
+            return np.array([-10, 0]), False
         match action:
             case 'up':
                 self.actor_pos = self.actor_pos - self._width
@@ -87,9 +88,9 @@ class PickUpAndDeliver(GridWorld):
                 self.actor_pos = self.actor_pos + 1
 
         state, is_terminal = self.update_state(self.state, self.actor_pos) 
-
+        previous_state = self.current_state()
         self.state = state
-        value = self.reward(state)
+        value = self.reward(state, previous_state)
 
         if is_terminal:
             return value, True
